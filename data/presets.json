@@ -1,0 +1,70 @@
+{
+    "DDR World": {
+        "native_resolution": {"width": 1280, "height": 720},
+        "p1Score": [
+            {"x": 166, "y": 645, "width": 31, "height": 40},
+            {"x": 203, "y": 645, "width": 31, "height": 40},
+            {"x": 234, "y": 645, "width": 31, "height": 40},
+            {"x": 265, "y": 645, "width": 31, "height": 40},
+            {"x": 302, "y": 645, "width": 31, "height": 40},
+            {"x": 333, "y": 645, "width": 31, "height": 40},
+            {"x": 364, "y": 645, "width": 31, "height": 40}
+        ],
+        "p2Score": [
+            {"x": 886, "y": 645, "width": 31, "height": 40},
+            {"x": 923, "y": 645, "width": 31, "height": 40},
+            {"x": 954, "y": 645, "width": 31, "height": 40},
+            {"x": 985, "y": 645, "width": 31, "height": 40},
+            {"x": 1022, "y": 645, "width": 31, "height": 40},
+            {"x": 1053, "y": 645, "width": 31, "height": 40},
+            {"x": 1084, "y": 645, "width": 31, "height": 40}
+        ],
+        "binarization_mode": 0,
+        "binarization_threshold": 230,
+        "mse_threshold": 0.1
+    },
+    "DDR A3": {
+        "native_resolution": {"width": 1280, "height": 720},
+        "p1Score": [
+            {"x": 44, "y": 643, "width": 39, "height": 39},
+            {"x": 98, "y": 643, "width": 39, "height": 39},
+            {"x": 137, "y": 643, "width": 39, "height": 39},
+            {"x": 176, "y": 643, "width": 39, "height": 39},
+            {"x": 225, "y": 643, "width": 39, "height": 39},
+            {"x": 264, "y": 643, "width": 39, "height": 39},
+            {"x": 303, "y": 643, "width": 39, "height": 39}
+        ],
+        "p2Score": [
+            {"x": 938, "y": 643, "width": 39, "height": 39},
+            {"x": 992, "y": 643, "width": 39, "height": 39},
+            {"x": 1031, "y": 643, "width": 39, "height": 39},
+            {"x": 1070, "y": 643, "width": 39, "height": 39},
+            {"x": 1119, "y": 643, "width": 39, "height": 39},
+            {"x": 1158, "y": 643, "width": 39, "height": 39},
+            {"x": 1197, "y": 643, "width": 39, "height": 39}
+        ],
+        "mse_threshold": 0.1
+    },
+    "DDR A20+": {
+        "native_resolution": {"width": 1280, "height": 720},
+        "p1Score": [
+            {"x": 45, "y": 643, "width": 39, "height": 21},
+            {"x": 99, "y": 643, "width": 39, "height": 21},
+            {"x": 138, "y": 643, "width": 39, "height": 21},
+            {"x": 177, "y": 643, "width": 39, "height": 21},
+            {"x": 226, "y": 643, "width": 39, "height": 21},
+            {"x": 265, "y": 643, "width": 39, "height": 21},
+            {"x": 304, "y": 643, "width": 39, "height": 21}
+        ],
+        "p2Score": [
+            {"x": 941, "y": 643, "width": 39, "height": 21},
+            {"x": 995, "y": 643, "width": 39, "height": 21},
+            {"x": 1034, "y": 643, "width": 39, "height": 21},
+            {"x": 1073, "y": 643, "width": 39, "height": 21},
+            {"x": 1122, "y": 643, "width": 39, "height": 21},
+            {"x": 1161, "y": 643, "width": 39, "height": 21},
+            {"x": 1200, "y": 643, "width": 39, "height": 21}
+        ],
+        "mse_threshold": 0.1
+    }
+}
