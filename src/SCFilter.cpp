@@ -112,7 +112,9 @@ void SCFilter::videoRender(gs_effect_t *unused)
 		} else if (!p1New && !p2New && clear_delay != -1 && clear_timer++ < clear_delay) {
 			p1Score = {};
 			p2Score = {};
-			updateTextSource("");
+			if (text_source) {
+				updateTextSource("");
+			}
 
 			if (display_source) {
 				OBSSourceAutoRelease source = obs_weak_source_get_source(display_source);
