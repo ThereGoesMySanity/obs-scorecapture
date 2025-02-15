@@ -1,39 +1,62 @@
 cmake_minimum_required(VERSION 3.28...3.30)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCOPE)
 
-set(CMAKE_CXX_STANDARD 20)
+project(${_name} VERSION ${_version})
 
-add_library(obs-scorecapture MODULE)
+option(ENABLE_FRONTEND_API "Use obs-frontend-api for UI functionality" OFF)
+option(ENABLE_QT "Use Qt functionality" OFF)
 
+include(compilerconfig)
+include(defaults)
+include(helpers)
 
-target_link_libraries(obs-scorecapture PRIVATE OBS::libobs OBS::websocket-api)
+add_library(${CMAKE_PROJECT_NAME} MODULE)
 
-find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs)
+find_package(libobs REQUIRED)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE lib)
 
-find_package(Qt6 REQUIRED COMPONENTS Gui)
-target_link_libraries(obs-scorecapture PRIVATE Qt::Gui)
+set(OpenCV_STATIC ON)
 
-if(OS_MACOS)
-  find_package(Iconv REQUIRED)
-elseif(OS_LINUX OR OS_FREEBSD OR OS_OPENBSD)
-  find_package(Fontconfig REQUIRED)
+if(NOT OS_LINUX AND USE_SYSTEM_OPENCV)
+  message(FATAL_ERROR "System OpenCV is only supported on Linux!")
 endif()
 
-target_link_libraries(obs-scorecapture PRIVATE "${OpenCV_LIBRARIES}")
-target_include_directories(obs-scorecapture SYSTEM PUBLIC "${OpenCV_INCLUDE_DIRS}")
+if(DEFINED ENV{GITHUB_ACTIONS} AND DEFINED ENV{GITHUB_WORKSPACE})
+  set(ARTIFACTS_DIR "$ENV{GITHUB_WORKSPACE}/artifacts")
+  if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+    set(OpenCV_DIR "${ARTIFACTS_DIR}/opencv/$ENV{opencv_tag}/windows-x64")
+  elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    set(OpenCV_DIR "${ARTIFACTS_DIR}/opencv/$ENV{opencv_tag}/linux-x64/lib/cmake/opencv4")
+  elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    set(OpenCV_DIR "${ARTIFACTS_DIR}/opencv/$ENV{opencv_tag}/mac-x64/lib/cmake/opencv4")
+  endif()
+  find_package(OpenCV REQUIRED)
+else()
+  find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE "${OpenCV_LIBRARIES}")
+  target_include_directories(${CMAKE_PROJECT_NAME} SYSTEM PUBLIC "${OpenCV_INCLUDE_DIRS}")
+endif()
 
-target_sources(obs-scorecapture PRIVATE 
-  src/Preset.cpp
-  src/SCFilter.cpp
-  src/SCFilter-info.cpp
-  src/SCFilter-properties.cpp
-  src/SCSource.cpp
-  src/SCSource-info.cpp
-  src/SCSource-properties.cpp
-  src/obs-utils.cpp
-  src/plugin-main.c
-  src/plugin-support.c
-)
+find_package(Qt6 REQUIRED COMPONENTS Gui)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt::Gui)
+target_compile_options(
+    ${CMAKE_PROJECT_NAME}
+    PRIVATE $<$<C_COMPILER_ID:Clang,AppleClang>:-Wno-quoted-include-in-framework-header -Wno-comma>
+  )
 
-set_target_properties_obs(obs-scorecapture PROPERTIES FOLDER plugins PREFIX "")
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE 
+    src/Preset.cpp
+    src/SCFilter.cpp
+    src/SCFilter-info.cpp
+    src/SCFilter-properties.cpp
+    src/SCSource.cpp
+    src/SCSource-info.cpp
+    src/SCSource-properties.cpp
+    src/obs-utils.cpp
+    src/plugin-main.c
+    src/plugin-support.c
+  )
+
+set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})

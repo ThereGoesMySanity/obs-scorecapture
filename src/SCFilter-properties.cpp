@@ -1,6 +1,4 @@
 #include <obs-module.h>
-#include "scorecapture-data.h"
-#include "scorecapture-filter.h"
 #include "SCFilter.hpp"
 #include "obs-utils.h"
 
