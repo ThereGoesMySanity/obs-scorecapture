@@ -11,10 +11,10 @@ inline std::vector<cv::Rect2i> rects_from_data(obs_data_array_t *arr){
     for (size_t i = 0; i < MIN(obs_data_array_count(arr), 10); i++) {
 	    OBSDataAutoRelease data = obs_data_array_item(arr, i);
 	    ret.push_back(cv::Rect2i(
-            obs_data_get_int(data, "x"),
-            obs_data_get_int(data, "y"),
-            obs_data_get_int(data, "width"),
-            obs_data_get_int(data, "height")));
+            (int)obs_data_get_int(data, "x"),
+            (int)obs_data_get_int(data, "y"),
+            (int)obs_data_get_int(data, "width"),
+            (int)obs_data_get_int(data, "height")));
     }
     return ret;
 }
@@ -25,7 +25,7 @@ bool Preset::load(std::string _name, OBSDataAutoRelease &p) {
 	OBSDataArrayAutoRelease p1Arr = obs_data_get_array(p, "p1Score"), p2Arr = obs_data_get_array(p, "p2Score");
     if (!nativeRes || !p1Arr) return false;
 
-	native_resolution = cv::Size2i(obs_data_get_int(nativeRes, "width"), obs_data_get_int(nativeRes, "height"));
+	native_resolution = cv::Size2i((int)obs_data_get_int(nativeRes, "width"), (int)obs_data_get_int(nativeRes, "height"));
 
 	p1ScoreArea = rects_from_data(p1Arr);
     p2ScoreArea = rects_from_data(p2Arr);

@@ -34,7 +34,7 @@ void SCFilter::update(obs_data_t *settings) {
 	updatePresetSettings(settings);
 
 	mode = obs_data_get_string(settings, "modes");
-	clear_delay = obs_data_get_int(settings, "clear_delay");
+	clear_delay = (int)obs_data_get_int(settings, "clear_delay");
 }
 
 void SCFilter::activate() {
