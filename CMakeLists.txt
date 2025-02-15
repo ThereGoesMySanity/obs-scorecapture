@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.28...3.30)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCOPE)
 
-set(CMAKE_CXX_STANDARD 20)
-
 project(${_name} VERSION ${_version})
 
 option(ENABLE_FRONTEND_API "Use obs-frontend-api for UI functionality" OFF)
@@ -35,6 +33,9 @@ if(DEFINED ENV{GITHUB_ACTIONS} AND DEFINED ENV{GITHUB_WORKSPACE})
     set(OpenCV_DIR "${ARTIFACTS_DIR}/opencv/$ENV{opencv_tag}/mac-x64/lib/cmake/opencv4")
   endif()
   find_package(OpenCV REQUIRED)
+elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+  set(OpenCV_DIR "../opencv/build/install")
+  find_package(OpenCV REQUIRED)
 else()
   find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs)
 endif()
@@ -49,6 +50,7 @@ target_compile_options(
   )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE 
+    src/plugin-support.h
     src/Preset.cpp
     src/SCFilter.cpp
     src/SCFilter-info.cpp
@@ -62,3 +64,4 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
   )
 
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})
+set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 23)

@@ -20,6 +20,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 const char *PLUGIN_NAME = "obs-scorecapture";
 const char *PLUGIN_VERSION = "obs-scorecapture";
+extern void blogva(int log_level, const char *format, va_list args);
 
 void obs_log(int log_level, const char *format, ...)
 {

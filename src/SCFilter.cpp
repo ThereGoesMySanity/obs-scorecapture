@@ -4,7 +4,9 @@
 #include <obs-websocket-api.h>
 #include "plugin-support.h"
 
+extern "C" {
 extern obs_websocket_vendor *vendor;
+}
 
 SCFilter::SCFilter(obs_source_t *_source)
 	: source(_source),
