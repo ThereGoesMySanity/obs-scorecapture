@@ -19,9 +19,7 @@
             {"x": 1053, "y": 645, "width": 31, "height": 40},
             {"x": 1084, "y": 645, "width": 31, "height": 40}
         ],
-        "binarization_mode": 0,
-        "binarization_threshold": 230,
-        "mse_threshold": 0.1
+        "mse_threshold": 0.2
     },
     "DDR A3": {
         "native_resolution": {"width": 1280, "height": 720},

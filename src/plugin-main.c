@@ -19,11 +19,13 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <obs-module.h>
 #include <obs-websocket-api.h>
 #include "plugin-support.h"
+#include "obs-utils.h"
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 
 extern struct obs_source_info scorecapture_filter_info;
+extern struct obs_source_info scorecapture_source_info;
 
 obs_websocket_vendor vendor = NULL;
 
@@ -34,7 +36,9 @@ MODULE_EXPORT const char *obs_module_description(void)
 
 bool obs_module_load(void)
 {
+	check_plugin_config_folder_exists();
 	obs_register_source(&scorecapture_filter_info);
+	obs_register_source(&scorecapture_source_info);
 	obs_log(LOG_INFO, "plugin loaded successfully (version %s)", "1.0.0");
 	return true;
 }

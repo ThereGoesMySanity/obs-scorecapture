@@ -16,10 +16,10 @@ You should have received a copy of the GNU General Public License along
 with this program. If not, see <https://www.gnu.org/licenses/>
 */
 
-#include <plugin-support.h>
+#include "plugin-support.h"
 
-const char *PLUGIN_NAME = "@CMAKE_PROJECT_NAME@";
-const char *PLUGIN_VERSION = "@CMAKE_PROJECT_VERSION@";
+const char *PLUGIN_NAME = "obs-scorecapture";
+const char *PLUGIN_VERSION = "obs-scorecapture";
 
 void obs_log(int log_level, const char *format, ...)
 {
