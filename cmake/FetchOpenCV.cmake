@@ -66,7 +66,11 @@ FetchContent_Declare(
   URL_HASH ${OpenCV_HASH})
 FetchContent_MakeAvailable(opencv)
 
-set(OpenCV_DIR ${opencv_SOURCE_DIR})
+if (MSVC)
+  set(OpenCV_DIR ${opencv_SOURCE_DIR})
+else()
+  set(OpenCV_DIR ${opencv_SOURCE_DIR}/lib/cmake/opencv4)
+endif()
 find_package(OpenCV REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE "${OpenCV_LIBRARIES}")
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC "${OpenCV_INCLUDE_DIRS}")
