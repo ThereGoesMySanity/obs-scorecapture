@@ -95,7 +95,7 @@ build() {
 
   pushd ${project_root}
 
-  local -a cmake_args=()
+  local -a cmake_args=("-DCMAKE_BUILD_TYPE=${config}")
   local -a cmake_build_args=(--build)
   local -a cmake_install_args=(--install)
 
