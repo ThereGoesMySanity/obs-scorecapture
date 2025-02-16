@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.28...3.30)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 15.0)
+set(CMAKE_OSX_ARCHITECTURES x86_64;arm64)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCOPE)
 
