@@ -112,11 +112,6 @@ jobs:
           print "pluginName=${product_name}" >> $GITHUB_OUTPUT
           print "pluginVersion=${product_version}" >> $GITHUB_OUTPUT
 
-      - name: Install OpenCV
-        uses: ThereGoesMySanity/opencv-action@main
-        with:
-          opencv_tag: '4.11.0'
-
       - uses: actions/cache/restore@v4
         id: ccache-cache
         with:
@@ -208,11 +203,6 @@ jobs:
           echo "pluginName=${product_name}" >> $GITHUB_OUTPUT
           echo "pluginVersion=${product_version}" >> $GITHUB_OUTPUT
 
-      - name: Install OpenCV
-        uses: ThereGoesMySanity/opencv-action@main
-        with:
-          opencv_tag: '4.11.0'
-
       - uses: actions/cache/restore@v4
         id: ccache-cache
         with:
@@ -286,11 +276,6 @@ jobs:
 
           "pluginName=${ProductName}" >> $env:GITHUB_OUTPUT
           "pluginVersion=${ProductVersion}" >> $env:GITHUB_OUTPUT
-
-      - name: Install OpenCV
-        uses: ThereGoesMySanity/opencv-action@main
-        with:
-          opencv_tag: '4.11.0'
 
       - name: Build Plugin 🧱
         uses: ./.github/actions/build-plugin
