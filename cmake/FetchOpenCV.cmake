@@ -66,11 +66,18 @@ FetchContent_Declare(
   URL_HASH ${OpenCV_HASH})
 FetchContent_MakeAvailable(opencv)
 
-if (MSVC)
-  set(OpenCV_DIR ${opencv_SOURCE_DIR})
+add_library(OpenCV INTERFACE)
+if(MSVC)
+  target_link_libraries(
+    OpenCV
+    INTERFACE ${opencv_SOURCE_DIR}/x64/vc17/staticlib/opencv_imgproc4110.lib
+              ${opencv_SOURCE_DIR}/x64/vc17/staticlib/opencv_imgcodecs4110.lib
+              ${opencv_SOURCE_DIR}/x64/vc17/staticlib/opencv_core4110.lib
+              ${opencv_SOURCE_DIR}/x64/vc17/staticlib/zlib.lib)
+  target_include_directories(OpenCV SYSTEM INTERFACE ${opencv_SOURCE_DIR}/include)
 else()
-  set(OpenCV_DIR ${opencv_SOURCE_DIR}/lib/cmake/opencv4)
+  target_link_libraries(
+    OpenCV INTERFACE ${opencv_SOURCE_DIR}/lib/libopencv_imgproc.a ${opencv_SOURCE_DIR}/lib/libopencv_core.a ${opencv_SOURCE_DIR}/lib/libopencv_imgcodecs.a
+                     ${opencv_SOURCE_DIR}/lib/opencv4/3rdparty/libzlib.a)
+  target_include_directories(OpenCV SYSTEM INTERFACE ${opencv_SOURCE_DIR}/include/opencv4)
 endif()
-find_package(OpenCV REQUIRED)
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE "${OpenCV_LIBRARIES}")
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC "${OpenCV_INCLUDE_DIRS}")
