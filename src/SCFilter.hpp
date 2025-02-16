@@ -4,6 +4,7 @@
 #include <optional>
 #include <obs.hpp>
 #include "Preset.hpp"
+#include <future>
 
 class SCFilter {
 public:
@@ -25,11 +26,17 @@ public:
     void updateTextSourceSettings(obs_data_t *settings);
     void updateDisplaySourceSettings(obs_data_t *settings);
     std::optional<cv::Mat> getRGBAFromStageSurface();
+    void doProcessing(cv::Mat mat);
 
     void addPresets(obs_properties_t *props);
     void addModes(obs_properties_t *props);
+
+
+    std::thread processing_thread;
+    std::promise<std::optional<cv::Mat>> promise;
+    std::mutex processing_mutex;
     
-    std::optional<Preset> preset;
+    std::optional<Preset> preset = {};
     OBSSourceAutoRelease source = nullptr;
     std::string unique_id;
     gs_texrender_t *texrender = nullptr;
@@ -41,7 +48,7 @@ public:
 
     std::optional<int> p1Score, p2Score;
 
-    int clear_delay;
+    int clear_delay = 0;
     int clear_timer = 0;
 
     bool isDisabled = false;

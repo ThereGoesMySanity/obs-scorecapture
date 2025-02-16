@@ -50,15 +50,18 @@ target_compile_options(
   )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE 
-    src/plugin-support.h
     src/Preset.cpp
+    src/SCFilter.hpp
     src/SCFilter.cpp
     src/SCFilter-info.cpp
     src/SCFilter-properties.cpp
+    src/SCSource.hpp
     src/SCSource.cpp
     src/SCSource-info.cpp
     src/SCSource-properties.cpp
+    src/obs-utils.h
     src/obs-utils.cpp
+    src/plugin-support.h
     src/plugin-main.c
     src/plugin-support.c
   )

@@ -13,12 +13,19 @@ SCFilter::SCFilter(obs_source_t *_source)
 	  unique_id(obs_source_get_uuid(_source)),
 	  texrender(gs_texrender_create(GS_BGRA, GS_ZS_NONE)),
 	  enableSignal(
-		  obs_source_get_signal_handler(source), "enable",
+		  obs_source_get_signal_handler(_source), "enable",
 		  [](void *data, calldata_t *cd) {
 			  static_cast<SCFilter *>(data)->enable(calldata_bool(cd, "enabled"));
 		  },
-		  this)
-{
+		  this) {
+	processing_thread = std::thread([this]() {
+		while (this->source) {
+			std::unique_lock lock(processing_mutex, std::defer_lock);
+			auto mat = this->promise.get_future().get();
+			lock.lock();
+			if (mat) this->doProcessing(mat.value());
+		}
+	});
 }
 
 SCFilter::~SCFilter() {
@@ -28,6 +35,9 @@ SCFilter::~SCFilter() {
         gs_stagesurface_destroy(stagesurface);
     }
     obs_leave_graphics();
+    source = nullptr;
+    promise.set_value({});
+    processing_thread.join();
 }
 
 void SCFilter::update(obs_data_t *settings) {
@@ -56,12 +66,8 @@ void SCFilter::enable(bool enabled) {
 void SCFilter::videoRender(gs_effect_t *unused)
 {
     UNUSED_PARAMETER(unused);
-	// Skip if not fully initialized
-	if (isDisabled || !preset) {
-		if (source) {
-			obs_source_skip_video_filter(source);
-		}
-		return;
+	if (source) {
+		obs_source_skip_video_filter(source);
 	}
 
 	if (is_valid_output_source_name(text_source_name.c_str()) && !text_source) {
@@ -71,67 +77,73 @@ void SCFilter::videoRender(gs_effect_t *unused)
 		display_source = acquire_weak_output_source_ref(display_source_name.c_str());
 	}
 
-	auto mat_opt = getRGBAFromStageSurface();
-	if (mat_opt) {
-		std::optional<int> p1New, p2New;
-		preset->analyzeImageMsd(mat_opt.value(), p1New, p2New);
-		
-		if (p1New > p1Score || p2New > p2Score) {
-			p1Score = p1New;
-			p2Score = p2New;
-			std::optional<std::string> update_text = getUpdateText();
-			if(update_text) {
-				clear_timer = 0;
+	std::unique_lock lock(processing_mutex, std::defer_lock);
+	if (lock.try_lock()) {
+		auto mat_opt = getRGBAFromStageSurface();
+		if (mat_opt) {
+			promise.set_value(mat_opt);
+			promise = {};
+		}
+	}
+}
 
-				if (text_source) {
-					updateTextSource(update_text.value());
-				}
+void SCFilter::doProcessing(cv::Mat mat) {
+	std::optional<int> p1New, p2New;
+	preset->analyzeImageMsd(mat, p1New, p2New);
 
-				if (display_source) {
-					OBSSourceAutoRelease source = obs_weak_source_get_source(display_source);
-					if (source) {
-						calldata_t params = {0};
-						calldata_set_ptr(&params, "p1Score", &p1Score);
-						calldata_set_ptr(&params, "p2Score", &p2Score);
-						proc_handler_call(obs_source_get_proc_handler(source), "scores_updated", &params);
-					} else {
-						display_source = {};
-					}
-				}
+	if (p1New > p1Score || p2New > p2Score) {
+		p1Score = p1New;
+		p2Score = p2New;
+		std::optional<std::string> update_text = getUpdateText();
+		if (update_text) {
+			clear_timer = 0;
 
-				if (vendor) {
-					OBSDataAutoRelease update_data = obs_data_create();
-					obs_data_set_string(update_data, "source_name", text_source_name.c_str());
-					if (p1Score) {
-						obs_data_set_int(update_data, "p1Score", p1Score.value());
-					}
-					if (p2Score) {
-						obs_data_set_int(update_data, "p2Score", p2Score.value());
-					}
-					obs_websocket_vendor_emit_event(vendor, "scores_updated", update_data);
-				}
-			}
-		} else if (!p1New && !p2New && clear_delay != -1 && clear_timer++ < clear_delay) {
-			p1Score = {};
-			p2Score = {};
 			if (text_source) {
-				updateTextSource("");
+				updateTextSource(update_text.value());
 			}
 
 			if (display_source) {
 				OBSSourceAutoRelease source = obs_weak_source_get_source(display_source);
 				if (source) {
 					calldata_t params = {0};
-					proc_handler_call(obs_source_get_proc_handler(source), "scores_cleared", &params);
+					calldata_set_ptr(&params, "p1Score", &p1Score);
+					calldata_set_ptr(&params, "p2Score", &p2Score);
+					proc_handler_call(obs_source_get_proc_handler(source), "scores_updated",
+							  &params);
 				} else {
 					display_source = {};
 				}
 			}
+
+			if (vendor) {
+				OBSDataAutoRelease update_data = obs_data_create();
+				obs_data_set_string(update_data, "source_name", text_source_name.c_str());
+				if (p1Score) {
+					obs_data_set_int(update_data, "p1Score", p1Score.value());
+				}
+				if (p2Score) {
+					obs_data_set_int(update_data, "p2Score", p2Score.value());
+				}
+				obs_websocket_vendor_emit_event(vendor, "scores_updated", update_data);
+			}
+		}
+	} else if (!p1New && !p2New && clear_delay != -1 && clear_timer++ < clear_delay) {
+		p1Score = {};
+		p2Score = {};
+		if (text_source) {
+			updateTextSource("");
+		}
+
+		if (display_source) {
+			OBSSourceAutoRelease source = obs_weak_source_get_source(display_source);
+			if (source) {
+				calldata_t params = {0};
+				proc_handler_call(obs_source_get_proc_handler(source), "scores_cleared", &params);
+			} else {
+				display_source = {};
+			}
 		}
 	}
-
-	obs_source_skip_video_filter(source);
-
 }
 
 std::optional<std::string> SCFilter::getUpdateText()
@@ -200,10 +212,11 @@ void SCFilter::updatePresetSettings(obs_data_t *settings) {
 		}
 		// Load new preset
 		OBSDataAutoRelease p = obs_data_get_obj(presets, new_preset.c_str());
-        preset = Preset();
+		preset = {};
+        auto newp = Preset();
 		//Unload if failed
-		if (!preset->load(new_preset, p)) {
-			preset = {};
+		if (newp.load(new_preset, p)) {
+			preset = newp;
 		}
 	}
 }
