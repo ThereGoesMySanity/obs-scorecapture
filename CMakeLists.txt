@@ -33,7 +33,6 @@ if(USE_SYSTEM_OPENCV)
   target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC "${OpenCV_INCLUDE_DIRS}")
 else()
   include(cmake/FetchOpenCV.cmake)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OpenCV)
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Gui)
