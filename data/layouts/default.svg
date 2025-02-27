@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="1280"
+   height="100"
+   viewBox="0 0 1280 100"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="default.svg"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#000000"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="2.0649972"
+     inkscape:cx="615.25507"
+     inkscape:cy="139.70963"
+     inkscape:window-width="2560"
+     inkscape:window-height="1368"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     showguides="false" />
+  <defs
+     id="defs1">
+    <rect
+       x="640"
+       y="40"
+       width="260.72762"
+       height="60"
+       id="rect13" />
+    <rect
+       x="350.6058"
+       y="40"
+       width="289.3942"
+       height="60"
+       id="rect12" />
+    <rect
+       x="545.76345"
+       y="15.496389"
+       width="94.236546"
+       height="24.503611"
+       id="rect7" />
+    <rect
+       x="643.82654"
+       y="13.55934"
+       width="94.552186"
+       height="25.768785"
+       id="rect5" />
+    <rect
+       x="648.55306"
+       y="15.066702"
+       width="147.92762"
+       height="24.654604"
+       id="rect3" />
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect1"
+       is_visible="true"
+       lpeversion="1"
+       nodesatellites_param="F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1"
+       radius="0"
+       unit="px"
+       method="auto"
+       mode="F"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+    <rect
+       x="643.82654"
+       y="13.55934"
+       width="75.665962"
+       height="22.639256"
+       id="rect6" />
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath9">
+      <rect
+         style="fill:#0909df;fill-opacity:1;stroke-width:1.73205"
+         id="p2clip"
+         width="640"
+         height="30"
+         x="640"
+         y="10"
+         sodipodi:type="rect"/>
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath10">
+      <rect
+         style="fill:#df0909;fill-opacity:1;stroke-width:1.73205"
+         id="p1clip"
+         width="640"
+         height="30"
+         x="0"
+         y="10"
+         sodipodi:type="rect" />
+    </clipPath>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#df0909;fill-opacity:1"
+       id="rect1"
+       width="640"
+       height="10"
+       x="0"
+       y="0"
+       sodipodi:type="rect" />
+    <rect
+       style="fill:#0909df;fill-opacity:1"
+       id="rect2"
+       width="640"
+       height="10"
+       x="640"
+       y="0"
+       sodipodi:type="rect" />
+    <rect
+       style="fill:#df0909;fill-opacity:1;stroke-width:1.73205"
+       id="rect1-5"
+       width="640"
+       height="30"
+       x="0"
+       y="10"
+       sodipodi:type="rect"
+       clip-path="url(#clipPath10)"
+       inkscape:label="score1" />
+    <rect
+       style="fill:#0909df;fill-opacity:1;stroke-width:1.73205"
+       id="rect2-3"
+       width="640"
+       height="30"
+       x="640"
+       y="10"
+       sodipodi:type="rect"
+       clip-path="url(#clipPath9)"
+       inkscape:label="score2" />
+    <text
+       xml:space="preserve"
+       id="text5"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:semi-condensed;font-size:16px;font-family:Bahnschrift;-inkscape-font-specification:'Bahnschrift Light Semi-Condensed';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:tabular-nums;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect5);shape-padding:0.242131;display:inline;fill:#ffffff;fill-opacity:1"
+       x="0"
+       y="0"
+       transform="translate(-0.61784134,-0.4948128)"><tspan
+         x="644.06836"
+         y="30.954458"
+         id="tspan2"><tspan
+           style="font-size:18.6667px"
+           id="tspan1">-10,000,000</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       id="text6"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:semi-condensed;font-size:18.6667px;font-family:Bahnschrift;-inkscape-font-specification:'Bahnschrift Light Semi-Condensed';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:tabular-nums;font-variant-east-asian:normal;text-align:end;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect7);display:inline;fill:#ffffff;fill-opacity:1"
+       transform="translate(-5.0003915,-2.1901253)"><tspan
+         x="555.61704"
+         y="32.649771"
+         id="tspan3">-10,000,000</tspan></text>
+    <text
+       xml:space="preserve"
+       id="text11"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:semi-condensed;font-size:48px;font-family:Bahnschrift;-inkscape-font-specification:'Bahnschrift Light Semi-Condensed';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:tabular-nums;font-variant-east-asian:normal;text-align:end;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect12);display:inline;fill:#ffffff;fill-opacity:1"
+       transform="translate(-9.99975)"><tspan
+         x="442.98438"
+         y="84.109375"
+         id="tspan4">10,000,000</tspan></text>
+    <text
+       xml:space="preserve"
+       id="text12"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:semi-condensed;font-size:48px;font-family:Bahnschrift;-inkscape-font-specification:'Bahnschrift Light Semi-Condensed';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:tabular-nums;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect13);display:inline;fill:#ffffff;fill-opacity:1"
+       x="-190.125"
+       y="0"
+       transform="translate(9.999625)"><tspan
+         x="640"
+         y="84.109375"
+         id="tspan5">10,000,000</tspan></text>
+  </g>
+</svg>

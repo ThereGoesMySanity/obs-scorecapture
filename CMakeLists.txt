@@ -7,7 +7,6 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCO
 project(${_name} VERSION ${_version})
 
 option(ENABLE_FRONTEND_API "Use obs-frontend-api for UI functionality" OFF)
-option(ENABLE_QT "Use Qt functionality" OFF)
 
 include(compilerconfig)
 include(defaults)
@@ -42,6 +41,15 @@ target_compile_options(
     ${CMAKE_PROJECT_NAME}
     PRIVATE $<$<C_COMPILER_ID:Clang,AppleClang>:-Wno-quoted-include-in-framework-header -Wno-comma>
   )
+
+add_custom_target(resvg 
+    COMMAND cargo build $<$<CONFIG:Release>:--release>
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resvg/crates/c-api
+    BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/resvg/target/$<IF:$<CONFIG:Debug>,debug,release>/libresvg.a)
+add_dependencies(obs-scorecapture resvg)
+
+target_link_libraries(obs-scorecapture PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/resvg/target/$<IF:$<CONFIG:Debug>,debug,release>/libresvg.a)
+target_include_directories(obs-scorecapture SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/resvg/crates/c-api)
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE 
     src/Preset.cpp

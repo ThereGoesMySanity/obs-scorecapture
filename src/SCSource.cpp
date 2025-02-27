@@ -171,15 +171,11 @@ void SCSource::videoRender(gs_effect_t *effect)
 	const bool previous = gs_framebuffer_srgb_enabled();
 	gs_enable_framebuffer_srgb(true);
 
-	gs_blend_state_push();
-	gs_blend_function(GS_BLEND_ONE, GS_BLEND_INVSRCALPHA);
-
 	gs_eparam_t *const param = gs_effect_get_param_by_name(effect, "image");
 	gs_effect_set_texture_srgb(param, tex);
 
 	gs_draw_sprite(tex, 0, img.width(), img.height());
 
-	gs_blend_state_pop();
 	gs_texture_destroy(tex);
 
 	gs_enable_framebuffer_srgb(previous);
