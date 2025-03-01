@@ -1,8 +1,11 @@
-<body style="margin:0;background-color: black;">
+<body style="margin:0;">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/obs-websocket-js"></script>
     <script src="websocket.js"></script>
     <style>
+body {
+    background-color: black;
+}
 tspan {
     font-style:normal;
     font-variant:normal;
@@ -22,7 +25,9 @@ tspan {
     fill-opacity:1
 }
 .winning {
-    font-weight: bolder
+    font-weight: bolder;
+    font-size: larger;
+    vertical-align: top;
 }
     </style>
     <svg
@@ -131,18 +136,20 @@ tspan {
         <text
         xml:space="preserve"
         id="text11"
+        style="font-size: 48px;"
         ><tspan
-            style="text-anchor: end; font-size: 48px"
+            style="text-anchor: end; dominant-baseline: hanging;"
             x="630"
-            y="84.109375"
+            y="60"
             id="p1text">10,000,000</tspan></text>
         <text
         xml:space="preserve"
         id="text12"
         style="font-size:48px"
         ><tspan
+            style="dominant-baseline: hanging;"
             x="650"
-            y="84.109375"
+            y="60"
             id="p2text">10,000,000</tspan></text>
     </g>
     </svg>

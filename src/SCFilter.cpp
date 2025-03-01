@@ -117,7 +117,7 @@ void SCFilter::doProcessing(cv::Mat mat) {
 
 			if (vendor) {
 				OBSDataAutoRelease update_data = obs_data_create();
-				obs_data_set_string(update_data, "preset", preset->name.c_str())
+				obs_data_set_string(update_data, "preset", preset->name.c_str());
 				obs_data_set_string(update_data, "source_name", text_source_name.c_str());
 				if (p1Score) {
 					obs_data_set_int(update_data, "p1Score", p1Score.value());
@@ -143,6 +143,10 @@ void SCFilter::doProcessing(cv::Mat mat) {
 			} else {
 				display_source = {};
 			}
+		}
+
+		if (vendor) {
+			obs_websocket_vendor_emit_event(vendor, "scores_cleared", nullptr);
 		}
 	}
 }
