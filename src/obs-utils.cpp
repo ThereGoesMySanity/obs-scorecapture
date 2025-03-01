@@ -22,8 +22,7 @@ bool render_to_stagesurface(obs_source_t *target, gs_texrender_t *texrender, gs_
 	struct vec4 background;
 	vec4_zero(&background);
 	gs_clear(GS_CLEAR_COLOR, &background, 0.0f, 0);
-	gs_ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height), -100.0f,
-		 100.0f);
+	gs_ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height), -100.0f, 100.0f);
 	gs_blend_state_push();
 	gs_blend_function(GS_BLEND_ONE, GS_BLEND_ZERO);
 	obs_source_video_render(target);
@@ -45,7 +44,7 @@ bool render_to_stagesurface(obs_source_t *target, gs_texrender_t *texrender, gs_
 	return true;
 }
 
-obs_weak_source_t* acquire_weak_output_source_ref(const char *name)
+obs_weak_source_t *acquire_weak_output_source_ref(const char *name)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(name);
 	if (source) {
@@ -69,13 +68,14 @@ void check_plugin_config_folder_exists()
 	}
 }
 
-obs_data_t* load_presets() {
-	char* presets_file = obs_module_config_path("presets.json");
-    obs_data_t *presets = obs_data_create_from_json_file(presets_file);
-    bfree(presets_file);
-    return presets;
+obs_data_t *load_presets()
+{
+	char *presets_file = obs_module_config_path("presets.json");
+	obs_data_t *presets = obs_data_create_from_json_file(presets_file);
+	bfree(presets_file);
+	return presets;
 }
-bool is_valid_output_source_name(const char* output_source_name)
+bool is_valid_output_source_name(const char *output_source_name)
 {
 	std::string name = output_source_name;
 	return !name.empty() && name != "none" && name != "(null)";

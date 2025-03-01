@@ -32,7 +32,6 @@ void MakeQFont(obs_data_t *font_obj, QFont &font)
 		font.setStrikeOut(true);
 }
 
-
 SCSource::SCSource(obs_source_t *_source)
 	: source(_source),
 	  texrender(gs_texrender_create(GS_BGRA, GS_ZS_NONE)),
@@ -62,25 +61,29 @@ SCSource::SCSource(obs_source_t *_source)
 		this);
 }
 
-void SCSource::scoresUpdated(std::optional<int> p1Score, std::optional<int> p2Score) {
-    this->p1Score = p1Score;
-    this->p2Score = p2Score;
-    this->rerender = true;
+void SCSource::scoresUpdated(std::optional<int> p1Score, std::optional<int> p2Score)
+{
+	this->p1Score = p1Score;
+	this->p2Score = p2Score;
+	this->rerender = true;
 }
 
-void SCSource::scoresCleared() {
+void SCSource::scoresCleared()
+{
 	p1Score = {};
 	p2Score = {};
 	rerender = true;
 }
 
-SCSource::~SCSource() {
-    obs_enter_graphics();
-    gs_texrender_destroy(texrender);
-    obs_leave_graphics();
+SCSource::~SCSource()
+{
+	obs_enter_graphics();
+	gs_texrender_destroy(texrender);
+	obs_leave_graphics();
 }
 
-void SCSource::update(obs_data_t *settings) {
+void SCSource::update(obs_data_t *settings)
+{
 	p1Color = QColor::fromRgba(0xFF000000 + obs_data_get_int(settings, "p1_color"));
 	p2Color = QColor::fromRgba(0xFF000000 + obs_data_get_int(settings, "p2_color"));
 	text_color = QColor::fromRgba(0xFF000000 + obs_data_get_int(settings, "text_color"));
@@ -103,18 +106,21 @@ void SCSource::update(obs_data_t *settings) {
 	rerender = true;
 }
 
-void SCSource::activate() {
-    obs_log(LOG_INFO, "scorecapture_source_activate");
+void SCSource::activate()
+{
+	obs_log(LOG_INFO, "scorecapture_source_activate");
 	isDisabled = false;
 }
 
-void SCSource::deactivate() {
-    obs_log(LOG_INFO, "scorecapture_source_deactivate");
+void SCSource::deactivate()
+{
+	obs_log(LOG_INFO, "scorecapture_source_deactivate");
 	isDisabled = true;
 }
 
-void SCSource::enable(bool enabled) {
-    isDisabled = !enabled;
+void SCSource::enable(bool enabled)
+{
+	isDisabled = !enabled;
 }
 
 void SCSource::videoRender(gs_effect_t *effect)
@@ -136,7 +142,7 @@ void SCSource::videoRender(gs_effect_t *effect)
 			int diff = p1Score.value() - p2Score.value();
 			int absDiff = abs(diff);
 			qreal size = absDiff <= max_score / 25.0 ? 5.0 * center * absDiff / max_score
-								     : center * std::sqrt((qreal)absDiff / max_score);
+								 : center * std::sqrt((qreal)absDiff / max_score);
 			size = std::min(size, (double)center);
 			QLocale locale;
 			QString p1Text = locale.toString(p1Score.value());
@@ -145,25 +151,21 @@ void SCSource::videoRender(gs_effect_t *effect)
 			ctx.setPen(text_color);
 			if (diff != 0) {
 				ctx.setFont(small_font);
-				if (diff > 0)
-				{
+				if (diff > 0) {
 					ctx.fillRect(QRectF(center - size, 0, size, 40), p1Color);
 					ctx.drawText(QRectF(center + 5, 15, width - center - 5, height - 15),
 						     Qt::AlignTop, diffText);
-				}
-				else
-				{
+				} else {
 					ctx.fillRect(QRectF(center, 0, size, 40), p2Color);
 					ctx.drawText(QRectF(0, 15, width - center - 5, height - 15),
 						     Qt::AlignTop | Qt::AlignRight, diffText);
 				}
 			}
 			ctx.setFont(diff > 0 ? bold_font : font);
-			ctx.drawText(QRectF(0, 45, width - center - 10, height - 45),
-				     Qt::AlignTop | Qt::AlignRight, p1Text);
+			ctx.drawText(QRectF(0, 45, width - center - 10, height - 45), Qt::AlignTop | Qt::AlignRight,
+				     p1Text);
 			ctx.setFont(diff < 0 ? bold_font : font);
-			ctx.drawText(QRectF(center + 10, 45, width - center - 10, height - 45), Qt::AlignTop,
-				     p2Text);
+			ctx.drawText(QRectF(center + 10, 45, width - center - 10, height - 45), Qt::AlignTop, p2Text);
 		}
 	}
 	const uint8_t *bits = img.bits();
@@ -179,5 +181,4 @@ void SCSource::videoRender(gs_effect_t *effect)
 	gs_texture_destroy(tex);
 
 	gs_enable_framebuffer_srgb(previous);
-
 }

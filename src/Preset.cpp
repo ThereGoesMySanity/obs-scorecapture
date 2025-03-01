@@ -4,36 +4,38 @@
 #include <obs-module.h>
 #include <opencv2/imgcodecs.hpp>
 
-inline std::vector<cv::Rect2i> rects_from_data(obs_data_array_t *arr){
-    auto ret = std::vector<cv::Rect2i>{};
-    if (!arr) return ret;
+inline std::vector<cv::Rect2i> rects_from_data(obs_data_array_t *arr)
+{
+	auto ret = std::vector<cv::Rect2i>{};
+	if (!arr)
+		return ret;
 
-    for (size_t i = 0; i < MIN(obs_data_array_count(arr), 10); i++) {
-	    OBSDataAutoRelease data = obs_data_array_item(arr, i);
-	    ret.push_back(cv::Rect2i(
-            (int)obs_data_get_int(data, "x"),
-            (int)obs_data_get_int(data, "y"),
-            (int)obs_data_get_int(data, "width"),
-            (int)obs_data_get_int(data, "height")));
-    }
-    return ret;
+	for (size_t i = 0; i < MIN(obs_data_array_count(arr), 10); i++) {
+		OBSDataAutoRelease data = obs_data_array_item(arr, i);
+		ret.push_back(cv::Rect2i((int)obs_data_get_int(data, "x"), (int)obs_data_get_int(data, "y"),
+					 (int)obs_data_get_int(data, "width"), (int)obs_data_get_int(data, "height")));
+	}
+	return ret;
 }
 
-bool Preset::load(std::string _name, OBSDataAutoRelease &p) {
-    name = _name;
+bool Preset::load(std::string _name, OBSDataAutoRelease &p)
+{
+	name = _name;
 	OBSDataAutoRelease nativeRes = obs_data_get_obj(p, "native_resolution");
 	OBSDataArrayAutoRelease p1Arr = obs_data_get_array(p, "p1Score"), p2Arr = obs_data_get_array(p, "p2Score");
-    if (!nativeRes || !p1Arr) return false;
+	if (!nativeRes || !p1Arr)
+		return false;
 
-	native_resolution = cv::Size2i((int)obs_data_get_int(nativeRes, "width"), (int)obs_data_get_int(nativeRes, "height"));
+	native_resolution =
+		cv::Size2i((int)obs_data_get_int(nativeRes, "width"), (int)obs_data_get_int(nativeRes, "height"));
 
 	p1ScoreArea = rects_from_data(p1Arr);
-    p2ScoreArea = rects_from_data(p2Arr);
+	p2ScoreArea = rects_from_data(p2Arr);
 
 	two_player = p1Arr && p2Arr;
 
 	binarization_mode = {};
-    binarization_threshold = {};
+	binarization_threshold = {};
 
 	mse_threshold = (float)obs_data_get_double(p, "mse_threshold");
 
@@ -48,7 +50,7 @@ bool Preset::load(std::string _name, OBSDataAutoRelease &p) {
 		char *file = obs_module_config_path(path.array);
 
 		if (!std::filesystem::exists(file))
-            return false;
+			return false;
 
 		cv::Mat mat = cv::imread(file, cv::IMREAD_COLOR);
 
@@ -66,7 +68,7 @@ bool Preset::load(std::string _name, OBSDataAutoRelease &p) {
 		bfree(file);
 		dstr_free(&path);
 	}
-    return true;
+	return true;
 }
 void Preset::analyzeImageMsd(cv::InputArray img, std::optional<int> &p1, std::optional<int> &p2)
 {
@@ -81,20 +83,22 @@ void Preset::analyzeImageMsd(cv::InputArray img, std::optional<int> &p1, std::op
 	}
 }
 
-std::optional<int> Preset::analyzeImageMsd(const cv::Mat& img, std::vector<cv::Rect2i> &scoreArea) {
+std::optional<int> Preset::analyzeImageMsd(const cv::Mat &img, std::vector<cv::Rect2i> &scoreArea)
+{
 	std::optional<int> result = {};
-	for(auto& numArea : scoreArea) {
+	for (auto &numArea : scoreArea) {
 		cv::Mat subArea = img(numArea);
 		if (binarization_threshold) {
 			cv::cvtColor(subArea, subArea, cv::COLOR_BGR2GRAY);
-			cv::threshold(subArea, subArea, binarization_threshold.value(), 255, binarization_mode.value_or(0));
+			cv::threshold(subArea, subArea, binarization_threshold.value(), 255,
+				      binarization_mode.value_or(0));
 		} else {
 			cv::cvtColor(subArea, subArea, cv::COLOR_BGRA2BGR);
 		}
 
 		std::optional<int> min = {};
 		double minValue = mse_threshold;
-		for(int i = 0; i < 10; i++) {
+		for (int i = 0; i < 10; i++) {
 			double msd = cv::norm(subArea, digits[i], cv::NORM_L2, masks[i]) / 256;
 			msd = msd * msd / cv::countNonZero(masks[i]);
 			if (msd <= minValue) {

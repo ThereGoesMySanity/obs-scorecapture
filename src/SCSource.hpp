@@ -5,24 +5,24 @@
 
 class SCSource {
 public:
-    SCSource(obs_source_t *_source);
-    ~SCSource();
-    uint32_t getWidth() { return width; }
-    uint32_t getHeight() { return height; }
-    void update(obs_data_t *settings);
-    void activate();
-    void deactivate();
-    void enable(bool enabled);
-    void videoRender(gs_effect_t *effect);
-    obs_properties_t *getProperties();
-    static void getDefaults(obs_data_t *settings);
+	SCSource(obs_source_t *_source);
+	~SCSource();
+	uint32_t getWidth() { return width; }
+	uint32_t getHeight() { return height; }
+	void update(obs_data_t *settings);
+	void activate();
+	void deactivate();
+	void enable(bool enabled);
+	void videoRender(gs_effect_t *effect);
+	obs_properties_t *getProperties();
+	static void getDefaults(obs_data_t *settings);
 
 private:
-    void scoresUpdated(std::optional<int> p1Score, std::optional<int> p2Score);
-    void scoresCleared();
+	void scoresUpdated(std::optional<int> p1Score, std::optional<int> p2Score);
+	void scoresCleared();
 
 	obs_source_t *source = nullptr;
-    OBSSignal enableSignal;
+	OBSSignal enableSignal;
 	struct vec2 size;
 	gs_texrender_t *texrender = nullptr;
 	QImage img;

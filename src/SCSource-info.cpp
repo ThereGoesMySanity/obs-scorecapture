@@ -7,12 +7,16 @@ struct obs_source_info scorecapture_source_info = {
 	.type = OBS_SOURCE_TYPE_INPUT,
 	.output_flags = OBS_SOURCE_VIDEO | OBS_SOURCE_SRGB,
 
-	.get_name = [](void *unused) { UNUSED_PARAMETER(unused); return obs_module_text("SourceName"); },
+	.get_name =
+		[](void *unused) {
+			UNUSED_PARAMETER(unused);
+			return obs_module_text("SourceName");
+		},
 	.create =
 		[](obs_data_t *settings, obs_source_t *source) {
 			auto s = new SCSource(source);
 			s->update(settings);
-			return static_cast<void*>(s);
+			return static_cast<void *>(s);
 		},
 	.destroy = [](void *data) { delete static_cast<SCSource *>(data); },
 
@@ -27,5 +31,4 @@ struct obs_source_info scorecapture_source_info = {
 	.video_render = [](void *data, gs_effect_t *effect) { static_cast<SCSource *>(data)->videoRender(effect); },
 
 };
-
 }

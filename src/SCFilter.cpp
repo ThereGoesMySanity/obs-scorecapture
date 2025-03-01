@@ -17,31 +17,35 @@ SCFilter::SCFilter(obs_source_t *_source)
 		  [](void *data, calldata_t *cd) {
 			  static_cast<SCFilter *>(data)->enable(calldata_bool(cd, "enabled"));
 		  },
-		  this) {
+		  this)
+{
 	processing_thread = std::thread([this]() {
 		while (this->source) {
 			std::unique_lock lock(processing_mutex, std::defer_lock);
 			auto mat = this->promise.get_future().get();
 			lock.lock();
-			if (mat) this->doProcessing(mat.value());
+			if (mat)
+				this->doProcessing(mat.value());
 		}
 	});
 }
 
-SCFilter::~SCFilter() {
-    obs_enter_graphics();
-    gs_texrender_destroy(texrender);
-    if (stagesurface) {
-        gs_stagesurface_destroy(stagesurface);
-    }
-    obs_leave_graphics();
-    source = nullptr;
-    promise.set_value({});
-    processing_thread.join();
+SCFilter::~SCFilter()
+{
+	obs_enter_graphics();
+	gs_texrender_destroy(texrender);
+	if (stagesurface) {
+		gs_stagesurface_destroy(stagesurface);
+	}
+	obs_leave_graphics();
+	source = nullptr;
+	promise.set_value({});
+	processing_thread.join();
 }
 
-void SCFilter::update(obs_data_t *settings) {
-    updateTextSourceSettings(settings);
+void SCFilter::update(obs_data_t *settings)
+{
+	updateTextSourceSettings(settings);
 	updateDisplaySourceSettings(settings);
 	updatePresetSettings(settings);
 
@@ -49,23 +53,26 @@ void SCFilter::update(obs_data_t *settings) {
 	clear_delay = (int)obs_data_get_int(settings, "clear_delay");
 }
 
-void SCFilter::activate() {
-    obs_log(LOG_INFO, "scorecapture_filter_activate");
+void SCFilter::activate()
+{
+	obs_log(LOG_INFO, "scorecapture_filter_activate");
 	isDisabled = false;
 }
 
-void SCFilter::deactivate() {
-    obs_log(LOG_INFO, "scorecapture_filter_deactivate");
+void SCFilter::deactivate()
+{
+	obs_log(LOG_INFO, "scorecapture_filter_deactivate");
 	isDisabled = true;
 }
 
-void SCFilter::enable(bool enabled) {
-    isDisabled = !enabled;
+void SCFilter::enable(bool enabled)
+{
+	isDisabled = !enabled;
 }
 
 void SCFilter::videoRender(gs_effect_t *unused)
 {
-    UNUSED_PARAMETER(unused);
+	UNUSED_PARAMETER(unused);
 	if (source) {
 		obs_source_skip_video_filter(source);
 	}
@@ -87,7 +94,8 @@ void SCFilter::videoRender(gs_effect_t *unused)
 	}
 }
 
-void SCFilter::doProcessing(cv::Mat mat) {
+void SCFilter::doProcessing(cv::Mat mat)
+{
 	std::optional<int> p1New, p2New;
 	preset->analyzeImageMsd(mat, p1New, p2New);
 
@@ -189,7 +197,8 @@ bool SCFilter::updateTextSource(std::string updateText)
 	return true;
 }
 
-void SCFilter::updateTextSourceSettings(obs_data_t *settings) {
+void SCFilter::updateTextSourceSettings(obs_data_t *settings)
+{
 	std::string new_source_name = obs_data_get_string(settings, "text_sources");
 	bool is_valid = is_valid_output_source_name(new_source_name.c_str());
 
@@ -199,7 +208,8 @@ void SCFilter::updateTextSourceSettings(obs_data_t *settings) {
 	}
 }
 
-void SCFilter::updateDisplaySourceSettings(obs_data_t *settings) {
+void SCFilter::updateDisplaySourceSettings(obs_data_t *settings)
+{
 	std::string new_source_name = obs_data_get_string(settings, "display_sources");
 	bool is_valid = is_valid_output_source_name(new_source_name.c_str());
 
@@ -209,7 +219,8 @@ void SCFilter::updateDisplaySourceSettings(obs_data_t *settings) {
 	}
 }
 
-void SCFilter::updatePresetSettings(obs_data_t *settings) {
+void SCFilter::updatePresetSettings(obs_data_t *settings)
+{
 	std::string new_preset = obs_data_get_string(settings, "preset");
 	if (!preset || new_preset != preset->name) {
 		if (!presets) {
@@ -218,7 +229,7 @@ void SCFilter::updatePresetSettings(obs_data_t *settings) {
 		// Load new preset
 		OBSDataAutoRelease p = obs_data_get_obj(presets, new_preset.c_str());
 		preset = {};
-        auto newp = Preset();
+		auto newp = Preset();
 		//Unload if failed
 		if (newp.load(new_preset, p)) {
 			preset = newp;
@@ -236,16 +247,16 @@ std::optional<cv::Mat> SCFilter::getRGBAFromStageSurface()
 	if (!target) {
 		return {};
 	}
-    if (!render_to_stagesurface(target, texrender, &stagesurface)){
-        return {};
-    }
+	if (!render_to_stagesurface(target, texrender, &stagesurface)) {
+		return {};
+	}
 	uint8_t *video_data;
 	uint32_t linesize;
 	if (!gs_stagesurface_map(stagesurface, &video_data, &linesize)) {
 		return {};
 	}
-    auto ret = cv::Mat(gs_stagesurface_get_height(stagesurface), gs_stagesurface_get_width(stagesurface), CV_8UC4,
-		       video_data, linesize);
-    gs_stagesurface_unmap(stagesurface);
-    return ret;
+	auto ret = cv::Mat(gs_stagesurface_get_height(stagesurface), gs_stagesurface_get_width(stagesurface), CV_8UC4,
+			   video_data, linesize);
+	gs_stagesurface_unmap(stagesurface);
+	return ret;
 }
