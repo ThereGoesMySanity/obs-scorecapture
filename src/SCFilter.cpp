@@ -17,6 +17,17 @@ SCFilter::SCFilter(obs_source_t *_source)
 		  [](void *data, calldata_t *cd) {
 			  static_cast<SCFilter *>(data)->enable(calldata_bool(cd, "enabled"));
 		  },
+		  this),
+	  sourceCreated(
+		  obs_get_signal_handler(), "source_create",
+		  [](void *data, calldata_t *cd) {
+			  auto source = static_cast<obs_source_t *>(calldata_ptr(cd, "source"));
+			  if (strcmp("scorecapture_source", obs_source_get_unversioned_id(source)) == 0 ||
+			      strcmp("browser_source", obs_source_get_unversioned_id(source)) == 0) {
+				  static_cast<SCFilter *>(data)->output_sources.push_back(
+					  obs_source_get_weak_source(source));
+			  }
+		  },
 		  this)
 {
 	processing_thread = std::thread([this]() {
@@ -28,6 +39,16 @@ SCFilter::SCFilter(obs_source_t *_source)
 				this->doProcessing(mat.value());
 		}
 	});
+	obs_enum_sources(
+		[](void *data, obs_source_t *source) {
+			if (strcmp("scorecapture_source", obs_source_get_unversioned_id(source)) == 0 ||
+			    strcmp("browser_source", obs_source_get_unversioned_id(source)) == 0) {
+				static_cast<SCFilter *>(data)->output_sources.push_back(
+					obs_source_get_weak_source(source));
+			}
+			return true;
+		},
+		this);
 }
 
 SCFilter::~SCFilter()
@@ -46,7 +67,6 @@ SCFilter::~SCFilter()
 void SCFilter::update(obs_data_t *settings)
 {
 	updateTextSourceSettings(settings);
-	updateDisplaySourceSettings(settings);
 	updatePresetSettings(settings);
 
 	mode = obs_data_get_string(settings, "modes");
@@ -77,13 +97,6 @@ void SCFilter::videoRender(gs_effect_t *unused)
 		obs_source_skip_video_filter(source);
 	}
 
-	if (is_valid_output_source_name(text_source_name.c_str()) && !text_source) {
-		text_source = acquire_weak_output_source_ref(text_source_name.c_str());
-	}
-	if (is_valid_output_source_name(display_source_name.c_str()) && !display_source) {
-		display_source = acquire_weak_output_source_ref(display_source_name.c_str());
-	}
-
 	std::unique_lock lock(processing_mutex, std::defer_lock);
 	if (lock.try_lock()) {
 		auto mat_opt = getRGBAFromStageSurface();
@@ -100,61 +113,86 @@ void SCFilter::doProcessing(cv::Mat mat)
 	preset->analyzeImageMsd(mat, p1New, p2New);
 
 	if (p1New > p1Score || p2New > p2Score) {
-		p1Score = p1New;
-		p2Score = p2New;
+		if (p1New > p1Score) p1Score = p1New;
+		if (p2New > p2Score) p2Score = p2New;
 		std::optional<std::string> update_text = getUpdateText();
 		if (update_text) {
 			clear_timer = 0;
+			std::erase_if(output_sources,
+				      [](obs_weak_source_t *ws) { return !obs_weak_source_get_source(ws); });
 
-			if (text_source) {
-				updateTextSource(update_text.value());
+			OBSDataAutoRelease update_data = obs_data_create();
+			obs_data_set_string(update_data, "name", obs_source_get_name(source));
+			obs_data_set_string(update_data, "preset", preset->name.c_str());
+			if (p1Score) {
+				obs_data_set_int(update_data, "p1Score", p1Score.value());
+			}
+			if (p2Score) {
+				obs_data_set_int(update_data, "p2Score", p2Score.value());
 			}
 
-			if (display_source) {
-				OBSSourceAutoRelease source = obs_weak_source_get_source(display_source);
-				if (source) {
+			for (auto &weak_source : output_sources) {
+				const OBSSourceAutoRelease source = obs_weak_source_get_source(weak_source);
+				if (!source)
+					continue;
+
+				if (strncmp("text_", obs_source_get_unversioned_id(source), 5) == 0) {
+					updateTextSource(source, update_text.value());
+				}
+
+				if (strcmp("scorecapture_source", obs_source_get_unversioned_id(source)) == 0) {
 					calldata_t params = {0};
 					calldata_set_ptr(&params, "p1Score", &p1Score);
 					calldata_set_ptr(&params, "p2Score", &p2Score);
 					proc_handler_call(obs_source_get_proc_handler(source), "scores_updated",
 							  &params);
-				} else {
-					display_source = {};
+				}
+
+				if (strcmp("browser_source", obs_source_get_unversioned_id(source)) == 0) {
+					calldata_t params = {0};
+					calldata_set_string(&params, "eventName", "scores_updated");
+					calldata_set_string(&params, "jsonString", obs_data_get_json(update_data));
+					proc_handler_call(obs_source_get_proc_handler(source), "javascript_event",
+							  &params);
 				}
 			}
 
 			if (vendor) {
-				OBSDataAutoRelease update_data = obs_data_create();
-				obs_data_set_string(update_data, "preset", preset->name.c_str());
-				obs_data_set_string(update_data, "source_name", text_source_name.c_str());
-				if (p1Score) {
-					obs_data_set_int(update_data, "p1Score", p1Score.value());
-				}
-				if (p2Score) {
-					obs_data_set_int(update_data, "p2Score", p2Score.value());
-				}
 				obs_websocket_vendor_emit_event(vendor, "scores_updated", update_data);
 			}
 		}
-	} else if (!p1New && !p2New && clear_delay != -1 && clear_timer++ < clear_delay) {
+	} else if ((p1Score || p2Score) && !p1New && !p2New && clear_delay != -1 && clear_timer++ > clear_delay) {
 		p1Score = {};
 		p2Score = {};
-		if (text_source) {
-			updateTextSource("");
-		}
 
-		if (display_source) {
-			OBSSourceAutoRelease source = obs_weak_source_get_source(display_source);
-			if (source) {
+		std::erase_if(output_sources, [](obs_weak_source_t *ws) { return !obs_weak_source_get_source(ws); });
+
+		OBSDataAutoRelease update_data = obs_data_create();
+		obs_data_set_string(update_data, "name", obs_source_get_name(source));
+
+		for (auto &weak_source : output_sources) {
+			const OBSSourceAutoRelease source = obs_weak_source_get_source(weak_source);
+			if (!source)
+				continue;
+
+			if (strncmp("text_", obs_source_get_unversioned_id(source), 5) == 0) {
+				updateTextSource(source, "");
+			}
+
+			if (strcmp("scorecapture_source", obs_source_get_unversioned_id(source)) == 0) {
 				calldata_t params = {0};
 				proc_handler_call(obs_source_get_proc_handler(source), "scores_cleared", &params);
-			} else {
-				display_source = {};
+			}
+			if (strcmp("browser_source", obs_source_get_unversioned_id(source)) == 0) {
+				calldata_t params = {0};
+				calldata_set_string(&params, "eventName", "scores_cleared");
+				calldata_set_string(&params, "jsonString", obs_data_get_json(update_data));
+				proc_handler_call(obs_source_get_proc_handler(source), "javascript_event", &params);
 			}
 		}
 
 		if (vendor) {
-			obs_websocket_vendor_emit_event(vendor, "scores_cleared", nullptr);
+			obs_websocket_vendor_emit_event(vendor, "scores_cleared", update_data);
 		}
 	}
 }
@@ -180,42 +218,25 @@ std::optional<std::string> SCFilter::getUpdateText()
 	return update_text;
 }
 
-bool SCFilter::updateTextSource(std::string updateText)
+bool SCFilter::updateTextSource(const OBSSourceAutoRelease &text_source, std::string updateText)
 {
 	if (!text_source) {
 		obs_log(LOG_ERROR, "text_source is null");
 		return false;
 	}
-	OBSSourceAutoRelease target = obs_weak_source_get_source(text_source);
-	if (!target) {
-		obs_log(LOG_ERROR, "text_source target is null");
-		return false;
-	}
-	OBSDataAutoRelease text_settings = obs_source_get_settings(target);
+	OBSDataAutoRelease text_settings = obs_source_get_settings(text_source);
 	obs_data_set_string(text_settings, "text", updateText.c_str());
-	obs_source_update(target, text_settings);
+	obs_source_update(text_source, text_settings);
 	return true;
 }
 
 void SCFilter::updateTextSourceSettings(obs_data_t *settings)
 {
-	std::string new_source_name = obs_data_get_string(settings, "text_sources");
-	bool is_valid = is_valid_output_source_name(new_source_name.c_str());
+	const char *new_source_name = obs_data_get_string(settings, "text_sources");
+	bool is_valid = is_valid_output_source_name(new_source_name);
 
-	if (is_valid && new_source_name != text_source_name) {
-		text_source_name = new_source_name;
-		text_source = acquire_weak_output_source_ref(text_source_name.c_str());
-	}
-}
-
-void SCFilter::updateDisplaySourceSettings(obs_data_t *settings)
-{
-	std::string new_source_name = obs_data_get_string(settings, "display_sources");
-	bool is_valid = is_valid_output_source_name(new_source_name.c_str());
-
-	if (is_valid && new_source_name != display_source_name) {
-		display_source_name = new_source_name;
-		display_source = acquire_weak_output_source_ref(display_source_name.c_str());
+	if (is_valid) {
+		output_sources.push_back(acquire_weak_output_source_ref(new_source_name));
 	}
 }
 

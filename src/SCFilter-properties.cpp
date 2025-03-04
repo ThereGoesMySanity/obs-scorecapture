@@ -51,26 +51,6 @@ void add_text_source_output(obs_properties_t *props)
 	obs_property_list_add_string(text_sources, obs_module_text("NoOutput"), "none");
 }
 
-void add_display_source_output(obs_properties_t *props)
-{
-	obs_property_t *display_sources = obs_properties_add_list(props, "display_sources",
-								  obs_module_text("DisplaySource"), OBS_COMBO_TYPE_LIST,
-								  OBS_COMBO_FORMAT_STRING);
-	obs_enum_sources(
-		[](void *data, obs_source_t *source) -> bool {
-			obs_property_t *display_sources = static_cast<obs_property_t *>(data);
-			const char *source_type = obs_source_get_unversioned_id(source);
-			if (strcmp(source_type, "scorecapture_source") == 0) {
-				const char *name = obs_source_get_name(source);
-				obs_property_list_add_string(display_sources, name, name);
-			}
-			return true;
-		},
-		display_sources);
-
-	obs_property_list_add_string(display_sources, obs_module_text("NoOutput"), "none");
-}
-
 void SCFilter::addModes(obs_properties_t *props)
 {
 	obs_property_t *modes = obs_properties_add_list(props, "modes", obs_module_text("Mode"), OBS_COMBO_TYPE_LIST,
@@ -92,9 +72,7 @@ obs_properties_t *SCFilter::getProperties()
 
 	add_text_source_output(props);
 
-	add_display_source_output(props);
-
-	obs_properties_add_int(props, "clear_delay", obs_module_text("ClearDelay"), -1, 10, 1);
+	obs_properties_add_int(props, "clear_delay", obs_module_text("ClearDelay"), -1, 30, 1);
 
 	return props;
 }
@@ -102,7 +80,6 @@ obs_properties_t *SCFilter::getProperties()
 void SCFilter::getDefaults(obs_data_t *settings)
 {
 	obs_data_set_default_string(settings, "text_sources", "none");
-	obs_data_set_default_string(settings, "display_sources", "none");
 	obs_data_set_default_string(settings, "preset", "none");
 	obs_data_set_default_string(settings, "modes", "AutoDetect");
 	obs_data_set_default_bool(settings, "update_always", false);

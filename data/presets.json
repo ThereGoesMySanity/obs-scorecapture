@@ -64,5 +64,32 @@
             {"x": 1200, "y": 643, "width": 39, "height": 21}
         ],
         "mse_threshold": 0.1
+    },
+    "IIDX": {
+        "native_resolution": {"width": 1920, "height": 1080},
+        "p1Score": [
+            {"x": 58, "y": 960, "width": 36, "height": 24},
+            {"x": 94, "y": 960, "width": 36, "height": 24},
+            {"x": 130, "y": 960, "width": 36, "height": 24},
+            {"x": 166, "y": 960, "width": 36, "height": 24}
+        ],
+        "p2Score": [
+            {"x": 1718, "y": 960, "width": 36, "height": 24},
+            {"x": 1754, "y": 960, "width": 36, "height": 24},
+            {"x": 1790, "y": 960, "width": 36, "height": 24},
+            {"x": 1826, "y": 960, "width": 36, "height": 24}
+        ],
+        "mse_threshold": 0.1
+    },
+    "SDVX EX Score": {
+        "native_resolution": {"width": 1080, "height": 1920},
+        "p1Score": [
+            {"x": 930, "y": 455, "width": 16, "height": 22},
+            {"x": 946, "y": 455, "width": 16, "height": 22},
+            {"x": 962, "y": 455, "width": 16, "height": 22},
+            {"x": 978, "y": 455, "width": 16, "height": 22},
+            {"x": 994, "y": 455, "width": 16, "height": 22}
+        ],
+        "mse_threshold": 0.1
     }
 }

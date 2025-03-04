@@ -1,6 +1,44 @@
 <body style="margin:0;">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/obs-websocket-js"></script>
+    <script>
+const max_score = 400;
+
+function clearScores() {
+    for(const elem of ["#p1clip", "#p1text", "#p2diff", "#p2clip", "#p2text", "#p1diff"])
+    {
+        $(elem).hide();
+    }
+}
+
+function updateScores({p1Score, p2Score, preset}) {
+    if (p1Score === undefined || p2Score === undefined) return;
+
+    for(const {score, diff, clip, text, diffText} of [
+        {score: p1Score, diff: Math.max(p1Score - p2Score, 0), clip: "#p1clip", text: "#p1text", diffText: "#p2diff"},
+        {score: p2Score, diff: Math.max(p2Score - p1Score, 0), clip: "#p2clip", text: "#p2text", diffText: "#p1diff"}])
+    {
+        if (diff === 0) {
+            $(clip).hide();
+            $(diffText).hide();
+            $(text).removeClass("winning");
+        } else {
+            const direction = $(clip).attr("data-score-direction");
+            let size = diff <= max_score / 25.0 ? 5.0 * diff / max_score : Math.sqrt(diff / max_score);
+            if (direction.toLowerCase() === "left" || direction.toLowerCase() === "down") size = 1 - size;
+            clippath = {"left": "auto", "up": "auto", "down": "auto", "right": "auto"};
+            clippath[direction.toLowerCase()] = String(size * 100) + "%";
+            $(clip).css({"clip-path": `rect(${clippath.up} ${clippath.right} ${clippath.down} ${clippath.left})`});
+            $(clip).show();
+            $(diffText).text(Number(-diff).toLocaleString());
+            $(diffText).show();
+            $(text).addClass("winning");
+        }
+        $(text).text(Number(score).toLocaleString());
+        $(text).show();
+    }
+}
+    </script>
     <script src="websocket.js"></script>
     <style>
 body {
@@ -27,7 +65,6 @@ tspan {
 .winning {
     font-weight: bolder;
     font-size: larger;
-    vertical-align: top;
 }
     </style>
     <svg
@@ -120,7 +157,7 @@ tspan {
         y="0"
         ><tspan
             x="645"
-            y="30"
+            y="32"
             id="tspan2"><tspan
             style="font-size:18.6667px"
             id="p2diff">-10,000,000</tspan></tspan></text>
@@ -131,7 +168,7 @@ tspan {
         ><tspan
             style="text-anchor:end"
             x="635"
-            y="30"
+            y="32"
             id="p1diff">-10,000,000</tspan></text>
         <text
         xml:space="preserve"
@@ -140,7 +177,7 @@ tspan {
         ><tspan
             style="text-anchor: end; dominant-baseline: hanging;"
             x="630"
-            y="60"
+            y="55"
             id="p1text">10,000,000</tspan></text>
         <text
         xml:space="preserve"
@@ -149,7 +186,7 @@ tspan {
         ><tspan
             style="dominant-baseline: hanging;"
             x="650"
-            y="60"
+            y="55"
             id="p2text">10,000,000</tspan></text>
     </g>
     </svg>

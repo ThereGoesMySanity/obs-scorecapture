@@ -22,9 +22,8 @@ public:
 
 private:
 	std::optional<std::string> getUpdateText();
-	bool updateTextSource(std::string updateText);
+	bool updateTextSource(const OBSSourceAutoRelease &text_source, std::string updateText);
 	void updateTextSourceSettings(obs_data_t *settings);
-	void updateDisplaySourceSettings(obs_data_t *settings);
 	std::optional<cv::Mat> getRGBAFromStageSurface();
 	void doProcessing(cv::Mat mat);
 
@@ -52,12 +51,7 @@ private:
 
 	bool isDisabled = false;
 
-	OBSSignal enableSignal;
+	OBSSignal enableSignal, sourceCreated;
 
-	// Text source to output the text to
-	OBSWeakSourceAutoRelease text_source = nullptr;
-	std::string text_source_name;
-
-	OBSWeakSourceAutoRelease display_source = nullptr;
-	std::string display_source_name;
+	std::vector<OBSWeakSourceAutoRelease> output_sources;
 };
