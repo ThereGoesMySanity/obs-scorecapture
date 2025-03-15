@@ -48,8 +48,8 @@ SCSource::SCSource(obs_source_t *_source)
 		ph, "void scores_updated(in ptr p1Score, in ptr p2Score)",
 		[](void *data, calldata_t *cd) {
 			static_cast<SCSource *>(data)->scoresUpdated(
-				*static_cast<std::optional<int> *>(calldata_ptr(cd, "p1Score")),
-				*static_cast<std::optional<int> *>(calldata_ptr(cd, "p2Score")));
+				*static_cast<std::optional<ScoreData> *>(calldata_ptr(cd, "p1Score")),
+				*static_cast<std::optional<ScoreData> *>(calldata_ptr(cd, "p2Score")));
 		},
 		this);
 	proc_handler_add(
@@ -61,7 +61,7 @@ SCSource::SCSource(obs_source_t *_source)
 		this);
 }
 
-void SCSource::scoresUpdated(std::optional<int> p1Score, std::optional<int> p2Score)
+void SCSource::scoresUpdated(std::optional<ScoreData> p1Score, std::optional<ScoreData> p2Score)
 {
 	this->p1Score = p1Score;
 	this->p2Score = p2Score;
@@ -139,14 +139,14 @@ void SCSource::videoRender(gs_effect_t *effect)
 		ctx.fillRect(center, 0, center, 10, p2Color);
 
 		if (p1Score && p2Score && max_score > 0) {
-			int diff = p1Score.value() - p2Score.value();
+			int diff = p1Score->score - p2Score->score;
 			int absDiff = abs(diff);
 			qreal size = absDiff <= max_score / 25.0 ? 5.0 * center * absDiff / max_score
 								 : center * std::sqrt((qreal)absDiff / max_score);
 			size = std::min(size, (double)center);
 			QLocale locale;
-			QString p1Text = locale.toString(p1Score.value());
-			QString p2Text = locale.toString(p2Score.value());
+			QString p1Text = locale.toString(p1Score->score);
+			QString p2Text = locale.toString(p2Score->score);
 			QString diffText = locale.toString(-absDiff);
 			ctx.setPen(text_color);
 			if (diff != 0) {

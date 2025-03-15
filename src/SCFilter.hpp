@@ -21,9 +21,7 @@ public:
 	bool presetChanged(obs_properties_t *props, obs_property_t *prop, obs_data_t *settings);
 
 private:
-	std::optional<std::string> getUpdateText();
-	bool updateTextSource(const OBSSourceAutoRelease &text_source, std::string updateText);
-	void updateTextSourceSettings(obs_data_t *settings);
+	bool shouldUpdate();
 	std::optional<cv::Mat> getRGBAFromStageSurface();
 	void doProcessing(cv::Mat mat);
 
@@ -51,7 +49,5 @@ private:
 
 	bool isDisabled = false;
 
-	OBSSignal enableSignal, sourceCreated;
-
-	std::vector<OBSWeakSourceAutoRelease> output_sources;
+	OBSSignal enableSignal;
 };

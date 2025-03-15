@@ -52,10 +52,13 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     src/SCSource.cpp
     src/SCSource-info.cpp
     src/SCSource-properties.cpp
+    src/ScoreData.hpp
+    src/SCOutputManager.hpp
+    src/SCOutputManager.cpp
     src/obs-utils.h
     src/obs-utils.cpp
     src/plugin-support.h
-    src/plugin-main.c
+    src/plugin-main.cpp
     src/plugin-support.c
   )
 

@@ -3,9 +3,12 @@
 #include "obs-utils.h"
 #include <obs-websocket-api.h>
 #include "plugin-support.h"
+#include "ScoreData.hpp"
+#include "SCOutputManager.hpp"
 
 extern "C" {
 extern obs_websocket_vendor *vendor;
+extern SCOutputManager manager;
 }
 
 SCFilter::SCFilter(obs_source_t *_source)
@@ -16,17 +19,6 @@ SCFilter::SCFilter(obs_source_t *_source)
 		  obs_source_get_signal_handler(_source), "enable",
 		  [](void *data, calldata_t *cd) {
 			  static_cast<SCFilter *>(data)->enable(calldata_bool(cd, "enabled"));
-		  },
-		  this),
-	  sourceCreated(
-		  obs_get_signal_handler(), "source_create",
-		  [](void *data, calldata_t *cd) {
-			  auto source = static_cast<obs_source_t *>(calldata_ptr(cd, "source"));
-			  if (strcmp("scorecapture_source", obs_source_get_unversioned_id(source)) == 0 ||
-			      strcmp("browser_source", obs_source_get_unversioned_id(source)) == 0) {
-				  static_cast<SCFilter *>(data)->output_sources.push_back(
-					  obs_source_get_weak_source(source));
-			  }
 		  },
 		  this)
 {
@@ -39,16 +31,6 @@ SCFilter::SCFilter(obs_source_t *_source)
 				this->doProcessing(mat.value());
 		}
 	});
-	obs_enum_sources(
-		[](void *data, obs_source_t *source) {
-			if (strcmp("scorecapture_source", obs_source_get_unversioned_id(source)) == 0 ||
-			    strcmp("browser_source", obs_source_get_unversioned_id(source)) == 0) {
-				static_cast<SCFilter *>(data)->output_sources.push_back(
-					obs_source_get_weak_source(source));
-			}
-			return true;
-		},
-		this);
 }
 
 SCFilter::~SCFilter()
@@ -66,7 +48,6 @@ SCFilter::~SCFilter()
 
 void SCFilter::update(obs_data_t *settings)
 {
-	updateTextSourceSettings(settings);
 	updatePresetSettings(settings);
 
 	mode = obs_data_get_string(settings, "modes");
@@ -115,129 +96,25 @@ void SCFilter::doProcessing(cv::Mat mat)
 	if (p1New > p1Score || p2New > p2Score) {
 		if (p1New > p1Score) p1Score = p1New;
 		if (p2New > p2Score) p2Score = p2New;
-		std::optional<std::string> update_text = getUpdateText();
-		if (update_text) {
+		if (shouldUpdate()) {
 			clear_timer = 0;
-			std::erase_if(output_sources,
-				      [](obs_weak_source_t *ws) { return !obs_weak_source_get_source(ws); });
-
-			OBSDataAutoRelease update_data = obs_data_create();
-			obs_data_set_string(update_data, "name", obs_source_get_name(source));
-			obs_data_set_string(update_data, "preset", preset->name.c_str());
-			if (p1Score) {
-				obs_data_set_int(update_data, "p1Score", p1Score.value());
-			}
-			if (p2Score) {
-				obs_data_set_int(update_data, "p2Score", p2Score.value());
-			}
-
-			for (auto &weak_source : output_sources) {
-				const OBSSourceAutoRelease source = obs_weak_source_get_source(weak_source);
-				if (!source)
-					continue;
-
-				if (strncmp("text_", obs_source_get_unversioned_id(source), 5) == 0) {
-					updateTextSource(source, update_text.value());
-				}
-
-				if (strcmp("scorecapture_source", obs_source_get_unversioned_id(source)) == 0) {
-					calldata_t params = {0};
-					calldata_set_ptr(&params, "p1Score", &p1Score);
-					calldata_set_ptr(&params, "p2Score", &p2Score);
-					proc_handler_call(obs_source_get_proc_handler(source), "scores_updated",
-							  &params);
-				}
-
-				if (strcmp("browser_source", obs_source_get_unversioned_id(source)) == 0) {
-					calldata_t params = {0};
-					calldata_set_string(&params, "eventName", "scores_updated");
-					calldata_set_string(&params, "jsonString", obs_data_get_json(update_data));
-					proc_handler_call(obs_source_get_proc_handler(source), "javascript_event",
-							  &params);
-				}
-			}
-
-			if (vendor) {
-				obs_websocket_vendor_emit_event(vendor, "scores_updated", update_data);
-			}
+			manager.SetScores(obs_source_get_name(source), 
+				p1Score ? std::optional(ScoreData(p1Score.value())) : std::optional<ScoreData>(),
+				p2Score ? std::optional(ScoreData(p2Score.value())) : std::optional<ScoreData>());
 		}
 	} else if ((p1Score || p2Score) && !p1New && !p2New && clear_delay != -1 && clear_timer++ > clear_delay) {
 		p1Score = {};
 		p2Score = {};
 
-		std::erase_if(output_sources, [](obs_weak_source_t *ws) { return !obs_weak_source_get_source(ws); });
-
-		OBSDataAutoRelease update_data = obs_data_create();
-		obs_data_set_string(update_data, "name", obs_source_get_name(source));
-
-		for (auto &weak_source : output_sources) {
-			const OBSSourceAutoRelease source = obs_weak_source_get_source(weak_source);
-			if (!source)
-				continue;
-
-			if (strncmp("text_", obs_source_get_unversioned_id(source), 5) == 0) {
-				updateTextSource(source, "");
-			}
-
-			if (strcmp("scorecapture_source", obs_source_get_unversioned_id(source)) == 0) {
-				calldata_t params = {0};
-				proc_handler_call(obs_source_get_proc_handler(source), "scores_cleared", &params);
-			}
-			if (strcmp("browser_source", obs_source_get_unversioned_id(source)) == 0) {
-				calldata_t params = {0};
-				calldata_set_string(&params, "eventName", "scores_cleared");
-				calldata_set_string(&params, "jsonString", obs_data_get_json(update_data));
-				proc_handler_call(obs_source_get_proc_handler(source), "javascript_event", &params);
-			}
-		}
-
-		if (vendor) {
-			obs_websocket_vendor_emit_event(vendor, "scores_cleared", update_data);
-		}
 	}
 }
 
-std::optional<std::string> SCFilter::getUpdateText()
+bool SCFilter::shouldUpdate()
 {
-	std::optional<std::string> update_text = {};
 	bool autodetect = mode == "AutoDetect";
-	if (p1Score && p2Score && (autodetect || mode == "Versus")) {
-		int diff = p1Score.value() - p2Score.value();
-		if (diff > 0) {
-			update_text = "P1\n" + std::to_string(diff);
-		} else if (diff < 0) {
-			update_text = "P2\n" + std::to_string(-diff);
-		} else {
-			update_text = "Tie";
-		}
-	} else if (p1Score && (autodetect || mode == "P1")) {
-		update_text = std::to_string(p1Score.value());
-	} else if (p2Score && (autodetect || mode == "P2")) {
-		update_text = std::to_string(p2Score.value());
-	}
-	return update_text;
-}
-
-bool SCFilter::updateTextSource(const OBSSourceAutoRelease &text_source, std::string updateText)
-{
-	if (!text_source) {
-		obs_log(LOG_ERROR, "text_source is null");
-		return false;
-	}
-	OBSDataAutoRelease text_settings = obs_source_get_settings(text_source);
-	obs_data_set_string(text_settings, "text", updateText.c_str());
-	obs_source_update(text_source, text_settings);
-	return true;
-}
-
-void SCFilter::updateTextSourceSettings(obs_data_t *settings)
-{
-	const char *new_source_name = obs_data_get_string(settings, "text_sources");
-	bool is_valid = is_valid_output_source_name(new_source_name);
-
-	if (is_valid) {
-		output_sources.push_back(acquire_weak_output_source_ref(new_source_name));
-	}
+	return (p1Score && p2Score && (autodetect || mode == "Versus")) 
+		|| (p1Score && (autodetect || mode == "P1"))
+		|| (p2Score && (autodetect || mode == "P2"));
 }
 
 void SCFilter::updatePresetSettings(obs_data_t *settings)

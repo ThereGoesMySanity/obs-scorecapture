@@ -3,6 +3,8 @@
 #include <QFont>
 #include <obs.hpp>
 
+#include "ScoreData.hpp"
+
 class SCSource {
 public:
 	SCSource(obs_source_t *_source);
@@ -18,7 +20,7 @@ public:
 	static void getDefaults(obs_data_t *settings);
 
 private:
-	void scoresUpdated(std::optional<int> p1Score, std::optional<int> p2Score);
+	void scoresUpdated(std::optional<ScoreData> p1Score, std::optional<ScoreData> p2Score);
 	void scoresCleared();
 
 	obs_source_t *source = nullptr;
@@ -32,7 +34,7 @@ private:
 
 	bool isDisabled = false;
 
-	std::optional<int> p1Score, p2Score;
+	std::optional<ScoreData> p1Score, p2Score;
 	bool rerender = false;
 
 	int max_score = 400;

@@ -29,27 +29,6 @@ void SCFilter::addPresets(obs_properties_t *props)
 		},
 		this);
 }
-void add_text_source_output(obs_properties_t *props)
-{
-	// Add a property for the output text source
-	obs_property_t *text_sources = obs_properties_add_list(props, "text_sources", obs_module_text("TextSource"),
-							       OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_STRING);
-
-	obs_enum_sources(
-		[](void *data, obs_source_t *source) -> bool {
-			obs_property_t *text_sources = (obs_property_t *)data;
-			const char *source_type = obs_source_get_id(source);
-			if (strstr(source_type, "text") != NULL) {
-				const char *name = obs_source_get_name(source);
-				obs_property_list_add_string(text_sources, name, name);
-			}
-
-			return true;
-		},
-		text_sources);
-
-	obs_property_list_add_string(text_sources, obs_module_text("NoOutput"), "none");
-}
 
 void SCFilter::addModes(obs_properties_t *props)
 {
@@ -70,7 +49,6 @@ obs_properties_t *SCFilter::getProperties()
 
 	addModes(props);
 
-	add_text_source_output(props);
 
 	obs_properties_add_int(props, "clear_delay", obs_module_text("ClearDelay"), -1, 30, 1);
 
@@ -79,7 +57,6 @@ obs_properties_t *SCFilter::getProperties()
 
 void SCFilter::getDefaults(obs_data_t *settings)
 {
-	obs_data_set_default_string(settings, "text_sources", "none");
 	obs_data_set_default_string(settings, "preset", "none");
 	obs_data_set_default_string(settings, "modes", "AutoDetect");
 	obs_data_set_default_bool(settings, "update_always", false);

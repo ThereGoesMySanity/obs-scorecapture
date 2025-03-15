@@ -15,8 +15,8 @@ function updateScores({p1Score, p2Score, preset}) {
     if (p1Score === undefined || p2Score === undefined) return;
 
     for(const {score, diff, clip, text, diffText} of [
-        {score: p1Score, diff: Math.max(p1Score - p2Score, 0), clip: "#p1clip", text: "#p1text", diffText: "#p2diff"},
-        {score: p2Score, diff: Math.max(p2Score - p1Score, 0), clip: "#p2clip", text: "#p2text", diffText: "#p1diff"}])
+        {score: p1Score.score, diff: Math.max(p1Score.score - p2Score.score, 0), clip: "#p1clip", text: "#p1text", diffText: "#p2diff"},
+        {score: p2Score.score, diff: Math.max(p2Score.score - p1Score.score, 0), clip: "#p2clip", text: "#p2text", diffText: "#p1diff"}])
     {
         if (diff === 0) {
             $(clip).hide();
