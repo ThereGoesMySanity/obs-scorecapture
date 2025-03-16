@@ -2,7 +2,9 @@
 #include <format>
 #include <obs-websocket-api.h>
 
+extern "C" {
 extern obs_websocket_vendor vendor;
+}
 
 void SCOutputManager::Init()
 {
