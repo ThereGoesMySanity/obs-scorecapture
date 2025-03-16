@@ -49,7 +49,6 @@ obs_properties_t *SCFilter::getProperties()
 
 	addModes(props);
 
-
 	obs_properties_add_int(props, "clear_delay", obs_module_text("ClearDelay"), -1, 30, 1);
 
 	return props;

@@ -94,27 +94,28 @@ void SCFilter::doProcessing(cv::Mat mat)
 	preset->analyzeImageMsd(mat, p1New, p2New);
 
 	if (p1New > p1Score || p2New > p2Score) {
-		if (p1New > p1Score) p1Score = p1New;
-		if (p2New > p2Score) p2Score = p2New;
+		if (p1New > p1Score)
+			p1Score = p1New;
+		if (p2New > p2Score)
+			p2Score = p2New;
 		if (shouldUpdate()) {
 			clear_timer = 0;
-			manager.SetScores(obs_source_get_name(source), 
+			manager.SetScores(
+				obs_source_get_name(source),
 				p1Score ? std::optional(ScoreData(p1Score.value())) : std::optional<ScoreData>(),
 				p2Score ? std::optional(ScoreData(p2Score.value())) : std::optional<ScoreData>());
 		}
 	} else if ((p1Score || p2Score) && !p1New && !p2New && clear_delay != -1 && clear_timer++ > clear_delay) {
 		p1Score = {};
 		p2Score = {};
-
 	}
 }
 
 bool SCFilter::shouldUpdate()
 {
 	bool autodetect = mode == "AutoDetect";
-	return (p1Score && p2Score && (autodetect || mode == "Versus")) 
-		|| (p1Score && (autodetect || mode == "P1"))
-		|| (p2Score && (autodetect || mode == "P2"));
+	return (p1Score && p2Score && (autodetect || mode == "Versus")) || (p1Score && (autodetect || mode == "P1")) ||
+	       (p2Score && (autodetect || mode == "P2"));
 }
 
 void SCFilter::updatePresetSettings(obs_data_t *settings)

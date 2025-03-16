@@ -9,11 +9,11 @@ struct ScoreData {
 
 	ScoreData(obs_data_t *data)
 	{
-		score = obs_data_get_int(data, "score");
+		score = (int)obs_data_get_int(data, "score");
 		if (obs_data_has_user_value(data, "maxScore")) {
-			maxScore = obs_data_get_int(data, "maxScore");
+			maxScore = (int)obs_data_get_int(data, "maxScore");
 		}
-    }
+	}
 
 	void toObsData(obs_data_t *data)
 	{
