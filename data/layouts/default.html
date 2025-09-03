@@ -41,9 +41,6 @@ function updateScores({p1Score, p2Score, preset}) {
     </script>
     <script src="websocket.js"></script>
     <style>
-body {
-    background-color: black;
-}
 tspan {
     font-style:normal;
     font-variant:normal;
@@ -66,11 +63,18 @@ tspan {
     font-weight: bolder;
     font-size: larger;
 }
+.p1 {
+    fill: #df0909
+}
+.p2 {
+    fill: #0909df
+}
     </style>
     <svg
     width="1280"
     height="100"
     viewBox="0 0 1280 100"
+    scale="1.5"
     version="1.1"
     id="svg1"
     xmlns="http://www.w3.org/2000/svg"
@@ -117,7 +121,8 @@ tspan {
     <g
         id="layer1">
         <rect
-        style="fill:#df0909;fill-opacity:1"
+        style="fill-opacity:1"
+	class="p1"
         id="rect1"
         width="640"
         height="10"
@@ -125,7 +130,8 @@ tspan {
         y="0"
         />
         <rect
-        style="fill:#0909df;fill-opacity:1"
+        style="fill-opacity:1"
+	class="p2"
         id="rect2"
         width="640"
         height="10"
@@ -133,7 +139,8 @@ tspan {
         y="0"
         />
         <rect
-        style="fill:#df0909;fill-opacity:1;stroke-width:1.73205"
+        style="fill-opacity:1;stroke-width:1.73205"
+	class="p1"
         id="p1clip"
         width="640"
         height="30"
@@ -142,7 +149,8 @@ tspan {
         data-score-direction="left"
         />
         <rect
-        style="fill:#0909df;fill-opacity:1;stroke-width:1.73205"
+        style="fill-opacity:1;stroke-width:1.73205"
+	class="p2"
         id="p2clip"
         width="640"
         height="30"
